@@ -1,0 +1,78 @@
+openat LISTO
+open LISTO
+write LISTO
+read LISTO
+close LISTO
+creat LISTO
+fopen LISTO
+fclose LISTO
+fread LISTO
+fwrite LISTO
+open64 LISTO
+pwrite LISTO
+lseek LISTO
+lseek64 LISTO
+fseek LISTO
+pread LISTO
+ftruncate LISTO | No modifico el tamano del archivo NO ESTA IMPLEMENTADO
+__open_2 LISTO 
+__xstat LISTO
+__fxstat LISTO
+__lxstat64 LISTO
+__lxstat LISTO
+__xstat64 LISTO
+rename LISTO
+unlink LISTO
+remove LISTO
+mkdir LISTO
+rmdir LISTO
+ftell LISTO
+access LISTO
+chdir LISTO
+
+Preguntar a Felix (como se propaga la accion, solo al nodo master o a todos los nodos ALE)
+chmod ESTA COMO TO DO
+fchmod ESTA COMO TO DO
+fcntl ESTA COMO TO DO
+chown ESTA COMO TO DO
+fsync ESTA COMO TO DO
+flock ESTA COMO TO DO
+
+dup 
+fd= open ...
+1
+1000
+
+3
+ dup (1001) --> 1002 (¿Como apuntar que ese 1002 es equivalente a 1001)
+ (Diego)
+
+close (1)
+dup(fd) --> 
+
+dup2
+
+fork
+pipe
+
+exit - es Usada por _exit (¿Es una llamada?)
+feof - libc
+*opendir - Usa open y fcntl
+closedir - Usa close
+__realpath_chk - glibc
+dirent - es Usada por opendir
+dirent64 - dirent para grandes archivos
+fdopen ¿NO ES LLAMADA AL SISTEMA?
+*realpath - no es una llamada al sistema directa (¿readlink?)
+
+brk
+futex
+mmap -- ¿?
+getuid
+
+1. las funciones como TODO
+2. Donde se hace lo de sumar el fd
+3. Prueba en python
+4. Lanzar nueva libreria con más de 2 conteiner 
+
+preguntar a Dario sobre submodules githuh (ALe)

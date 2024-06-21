@@ -86,10 +86,19 @@ static int hook(long syscall_number,long arg0, long arg1,long arg2, long arg3,lo
   else if (syscall_number == SYS_openat)
   {
     //TODO: agregar soporte para el modo, con un tercer arg para crear desde openat
+    // openat(AT_FDCWD, "/tmp/expand/P1/demo.txt", O_WRONLY | O_CREAT | O_NOCTTY | O_NONBLOCK, 0666)
     char *path = (char *)arg1;
     int flags = (int)arg2;
+    mode_t mode = (mode_t)arg3;
 
-    if (is_xpn_prefix(path) )
+    if (mode != 0 && is_xpn_prefix(path)){
+      xpn_adaptor_keepInit();
+      mode = 00777;
+      fd  = xpn_creat((const char *)skip_xpn_prefix(path),mode);
+      fd = xpn_open(skip_xpn_prefix(path), O_RDWR);
+      ret = add_xpn_file_to_fdstable(fd);
+      *result = ret;
+    } else if (is_xpn_prefix(path))
     {
       xpn_adaptor_keepInit();
       fd = xpn_open(skip_xpn_prefix(path), flags);
@@ -381,8 +390,23 @@ static int hook(long syscall_number,long arg0, long arg1,long arg2, long arg3,lo
       *result = syscall_no_intercept(SYS_dup, arg0);
     }
     return 0;
-  }
-  else if(syscall_number == SYS_chdir)
+  }else if (syscall_number == SYS_dup2){
+    int fd = (int)arg0;
+    int fd2 = (int)arg1;
+    int ret = -1;
+    struct generic_fd virtual_fd = fdstable_get(fd);
+    if(virtual_fd.type == FD_XPN)
+    {
+      xpn_adaptor_keepInit();
+      ret = xpn_dup2(virtual_fd.real_fd, fd2);
+      *result = ret;
+    }
+    else
+    {
+      *result = syscall_no_intercept(SYS_dup2, arg0, arg1);
+    }
+    return 0;
+  }else if(syscall_number == SYS_chdir)
   {
     char *path = (char *)arg0;
     int ret = -1;

@@ -14,7 +14,7 @@
 
 
 static int hook(long syscall_number,long arg0, long arg1,long arg2, long arg3,long arg4, long arg5,long *result){
-  
+   
   (void) arg2;
   (void) arg3;
   (void) arg4;
@@ -85,27 +85,38 @@ static int hook(long syscall_number,long arg0, long arg1,long arg2, long arg3,lo
   }
   else if (syscall_number == SYS_openat)
   {
-    //TODO: agregar soporte para el modo, con un tercer arg para crear desde openat
-    // openat(AT_FDCWD, "/tmp/expand/P1/demo.txt", O_WRONLY | O_CREAT | O_NOCTTY | O_NONBLOCK, 0666)
     char *path = (char *)arg1;
     int flags = (int)arg2;
     mode_t mode = (mode_t)arg3;
 
-    if (mode != 0 && is_xpn_prefix(path)){
-      xpn_adaptor_keepInit();
-      mode = 00777;
-      fd  = xpn_creat((const char *)skip_xpn_prefix(path),mode);
-      fd = xpn_open(skip_xpn_prefix(path), O_RDWR);
-      ret = add_xpn_file_to_fdstable(fd);
-      *result = ret;
-    } else if (is_xpn_prefix(path))
+    //TODO revisar como lo hace bypass
+    if (flags & O_CREAT)
     {
+        printf("CREAT OPEN flags: %d\n", flags);
+        printf("CREAT path: %s\n", path);
+        printf("CREAT mode: %o\n", mode);
+        if(mode == 0)
+        {
+          printf("CREAT path: %s\n", path);
+          mode = 0600;
+          printf("CREAT mode nuevo: %o\n", mode);
+          *result = syscall_no_intercept(SYS_openat, arg0, arg1, arg2, mode);
+        }
+    }else if (is_xpn_prefix(path))
+    {
+      printf("OPEN path: %s\n", path);
+      printf("OPEN flags: %d\n", flags);
+      printf("OPEN mode: %o\n", mode);
+      if (flags & O_CREAT)
+      {
+        printf("CREAT XPN OPEN flags: %d\n", flags);
+      }
       xpn_adaptor_keepInit();
       fd = xpn_open(skip_xpn_prefix(path), flags);
       ret = add_xpn_file_to_fdstable(fd);
-      *result = ret; 
+      *result = ret;
     }
-    else 
+    else
     {
       *result = syscall_no_intercept(SYS_openat, arg0, arg1, arg2);
     }

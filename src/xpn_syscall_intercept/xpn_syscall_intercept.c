@@ -90,19 +90,7 @@ static int hook(long syscall_number,long arg0, long arg1,long arg2, long arg3,lo
     mode_t mode = (mode_t)arg3;
 
     //TODO revisar como lo hace bypass
-    if (flags & O_CREAT)
-    {
-        printf("CREAT OPEN flags: %d\n", flags);
-        printf("CREAT path: %s\n", path);
-        printf("CREAT mode: %o\n", mode);
-        if(mode == 0)
-        {
-          printf("CREAT path: %s\n", path);
-          mode = 0600;
-          printf("CREAT mode nuevo: %o\n", mode);
-          *result = syscall_no_intercept(SYS_openat, arg0, arg1, arg2, mode);
-        }
-    }else if (is_xpn_prefix(path))
+    if (is_xpn_prefix(path))
     {
       printf("OPEN path: %s\n", path);
       printf("OPEN flags: %d\n", flags);
@@ -116,6 +104,19 @@ static int hook(long syscall_number,long arg0, long arg1,long arg2, long arg3,lo
       ret = add_xpn_file_to_fdstable(fd);
       *result = ret;
     }
+    // else if (flags & O_CREAT)
+    // {
+    //     printf("CREAT OPEN flags: %d\n", flags);
+    //     printf("CREAT path: %s\n", path);
+    //     printf("CREAT mode: %o\n", mode);
+    //     if(strcmp(path, "///tmp/data4.txt") == 0)
+    //     {
+    //       printf("CREAT path: %s\n", path);
+    //       mode = 0600;
+    //       printf("CREAT mode nuevo: %o\n", mode);
+    //       *result = syscall_no_intercept(SYS_openat, arg0, arg1, arg2, mode);
+    //     }
+    // }
     else
     {
       *result = syscall_no_intercept(SYS_openat, arg0, arg1, arg2);
@@ -263,8 +264,10 @@ static int hook(long syscall_number,long arg0, long arg1,long arg2, long arg3,lo
       struct generic_fd virtual_fd = fdstable_get(fd);
       if (virtual_fd.type == FD_XPN)
       {
-        xpn_adaptor_keepInit ();
+        printf("SYS_newfstatat fd: %d\n", fd);
+        xpn_adaptor_keepInit();
         ret = xpn_fstat(virtual_fd.real_fd, buf);
+        printf("SYS_newfstatat ret: %d\n", ret);
         *result = ret;
       }
       else
